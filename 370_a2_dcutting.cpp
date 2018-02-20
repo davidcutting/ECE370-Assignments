@@ -7,138 +7,127 @@
     February 25, 2018
 
 */
-#include <iostream>
-#include <fstream>
-#include <string>
+
+#include <cstddef>
+
 /**
 
-Node.h
+Node
 
 */
+#ifndef NODE_H
+#define NODE_H
+
 template <class T>
 class Node {
     public:
+
         T data;
-        Node *link;
-        Node(T ndata, Node *nlink);
+        Node<T>* link;
+
+        Node() {
+            link = NULL;
+        }
+
+        Node(T ndata, Node<T>* nlink) {
+            data = ndata;
+            nlink = nlink;
+        }
+
         ~Node();
 };
 
-/**
-
-Node.cpp
-
-*/
-template <class T>
-Node<T>::Node() {
-    link = NULL;
-}
-
-template <class T>
-Node<T>::Node(T ndata, Node *nlink) {
-    data = ndata;
-    nlink = nlink;
-}
+#endif
 
 /**
 
-Queue.h
+Queue
 
 */
+#ifndef QUEUE_H
+#define QUEUE_H
+
 template <class T>
 class Queue {
-    public:
-        void append(T data);
-        T serve();
-        bool isEmpty();
-        Queue();
-        ~Queue();
     private:
-        Node *first;
-        Node *last;
+    public:
+
+        Node<T>* first;
+        Node<T>* last;
+
+        void append(T data) {
+            last = new Node<T>(data, last);
+            if(first == NULL) first = last;
+        }
+
+        T serve() {
+            if (first == NULL) return first->data;
+            Node<T>* popped = first;
+            first = first->link;
+            return popped->data;
+        }
+
+        bool isEmpty() {
+            return first == NULL;
+        }
+
+        Queue() {
+            first = NULL;
+            last = NULL;
+        }
+
+        ~Queue();
 };
 
-/**
-
-Queue.cpp
-
-*/
-template <class T>
-void Queue<T>::append(T data) {
-    last = new Node<T>(data, last);
-    if(first == NULL) first = last;
-}
-
-template <class T>
-T Queue<T>::serve() {
-    if (first == NULL) return first;
-    Node *popped = first;
-    first = first->link;
-    return popped;
-}
-
-template <class T>
-bool Queue<T>::isEmpty() {
-    return first == NULL;
-}
-
-template <class T>
-Queue<T>::Queue() {
-    first = NULL;
-    last = NULL;
-}
+#endif
 
 /**
 
-Stack.h
+Stack
 
 */
+#ifndef STACK_H
+#define STACK_H
+
 template <class T>
 class Stack {
-    public:
-        void push(T* input);
-        T* pop();
-        T* top();
-        bool isEmpty();
-        void display();
-        Stack();
-        ~Stack();
     private:
-        Node* top;
+    public:
+
+        Node<T>* head;
+
+        void push(T input) {
+            head = new Node<T>(input, head);
+        }
+
+        T pop() {
+            if (head == NULL) return head->data;
+            Node<T>* popped = head;
+            head = head->link;
+            return popped->data;
+        }
+
+        T top() {
+            return head->data;
+        }
+
+        bool isEmpty() {
+            return head == NULL;
+        }
+
+        /** TODO:
+        template <typename T>
+        void display();
+        */
+
+        Stack() {
+            head = NULL;
+        }
+
+        ~Stack();
 };
 
-/**
-
-Stack.cpp
-
-*/
-template <class T>
-void Stack<T>::push(T input) {
-    top = new Node<T>(input, top);
-}
-
-template <class T>
-T* Stack<T>::pop() {
-    if (top == NULL) return top;
-    Node *popped = top;
-    top = top->link;
-    return popped;
-}
-
-template <class T>
-T* Stack<T>::top() {
-    return top;
-}
-
-template <class T>
-bool Stack<T>::isEmpty() {
-    return top == NULL;
-}
-
-template <class T>
-Stack<T>::Stack() {
-    top = NULL;
-}
+#endif
 
 /**
 
@@ -146,13 +135,17 @@ main.cpp
 
 */
 
-int readFile(string* fileContent, char* fileName) {
-    fstream file;
-    file.open(fileName, ios::in);
-    string line;
+#include <iostream>
+#include <fstream>
+#include <string>
+
+int readFile(std::string* fileContent, char* fileName) {
+    std::fstream file;
+    file.open(fileName, std::ios::in);
     int counter = 0;
     if (file.is_open())
     {
+        std::string line;
         while (getline(file, line))
         {
             if (line == "")
@@ -165,9 +158,26 @@ int readFile(string* fileContent, char* fileName) {
     return counter;
 }
 
-Queue *queue = new Queue<char>();
-Stack *stack = new Stack<char>();
-void infixToPostfix(string expression) {
+int pre(char in) {
+    switch(in) {
+        case '(':
+        case ')':
+            return 0;
+        case '+':
+        case '-':
+            return 1;
+        case '*':
+        case '/':
+        case '^':
+            return 2;
+        default:
+            return 3;
+    }
+}
+
+Queue<char>* infixToPostfix(std::string expression) {
+    Stack<char> *stack = new Stack<char>();
+    Queue<char> *queue = new Queue<char>();
     int counter = 0;
     while (expression[counter] != '\n') {
         switch(expression[counter]) {
@@ -187,8 +197,8 @@ void infixToPostfix(string expression) {
             case '-':
             case '*':
             case '/':
-                while() {
-                    // pre(top) >= pre(Next)
+            case '^':
+                while(pre(stack->top()) >= pre(expression[counter])) {
                     queue->append(stack->pop());
                 }
                 stack->push(expression[counter]);
@@ -202,14 +212,34 @@ void infixToPostfix(string expression) {
             queue->append(stack->pop());
         }
     }
+    return queue;
 }
 
-void evaluatePostfix(string expression) {
-
+Stack<float>* evaluatePostfix(Queue<char>* queue) {
+    Stack<float> *stack = new Stack<float>();
+    while(!queue->isEmpty()) {
+        switch(queue->first->data) {
+            case '+':
+            case '-':
+            case '*':
+            case '/':
+            case '^':
+            default:
+                //stack->push()
+                break;
+        }
+    }
+    return stack;
 }
 
 int main() {
-    string contents[100];
+    std::string contents[100];
     int size = readFile(contents, "a2.txt");
+    for (int i = 0; i < size; i++) {
+        Queue<char> *queue = infixToPostfix(contents[i]);
+        while(!queue->isEmpty()) {
+            std::cout << queue->serve() << '\n';
+        }
+    }
     return 0;
 }
