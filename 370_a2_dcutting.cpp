@@ -9,6 +9,9 @@
 */
 
 #include <cstddef>
+#include <iostream>
+#include <fstream>
+#include <string>
 
 /**
 
@@ -31,10 +34,8 @@ class Node {
 
         Node(T ndata, Node<T>* nlink) {
             data = ndata;
-            nlink = nlink;
+            link = nlink;
         }
-
-        ~Node();
 };
 
 #endif
@@ -61,22 +62,34 @@ class Queue {
         }
 
         T serve() {
-            if (first == NULL) return first->data;
-            Node<T>* popped = first;
+            Node<T>* tmp = first;
+            T popped = first->data;
             first = first->link;
-            return popped->data;
+            delete tmp;
+            return popped;
+        }
+
+        T front() {
+            return first->data;
         }
 
         bool isEmpty() {
             return first == NULL;
         }
 
+        void display() {
+            Node<T>* next = first;
+            std::cout << "Queue: " << '\n';
+            while(next != NULL) {
+                std::cout << "  " << next->data << '\n';
+                next = next->link;
+            }
+        }
+
         Queue() {
             first = NULL;
             last = NULL;
         }
-
-        ~Queue();
 };
 
 #endif
@@ -101,10 +114,11 @@ class Stack {
         }
 
         T pop() {
-            if (head == NULL) return head->data;
-            Node<T>* popped = head;
+            Node<T>* tmp = head;
+            T popped = head->data;
             head = head->link;
-            return popped->data;
+            delete tmp;
+            return popped;
         }
 
         T top() {
@@ -115,16 +129,9 @@ class Stack {
             return head == NULL;
         }
 
-        /** TODO:
-        template <typename T>
-        void display();
-        */
-
         Stack() {
             head = NULL;
         }
-
-        ~Stack();
 };
 
 #endif
@@ -134,10 +141,6 @@ class Stack {
 main.cpp
 
 */
-
-#include <iostream>
-#include <fstream>
-#include <string>
 
 int readFile(std::string* fileContent, char* fileName) {
     std::fstream file;
@@ -158,7 +161,7 @@ int readFile(std::string* fileContent, char* fileName) {
     return counter;
 }
 
-int pre(char in) {
+int getPrecedence(char in) {
     switch(in) {
         case '(':
         case ')':
@@ -168,78 +171,110 @@ int pre(char in) {
             return 1;
         case '*':
         case '/':
-        case '^':
             return 2;
         default:
-            return 3;
+            return -1;
     }
 }
 
-Queue<char>* infixToPostfix(std::string expression) {
-    Stack<char> *stack = new Stack<char>();
-    Queue<char> *queue = new Queue<char>();
-    int counter = 0;
-    while (expression[counter] != '\n') {
-        switch(expression[counter]) {
-            case '(':
-                stack->push(expression[counter]);
-                break;
-            case ')':
-                for (int i = 0; i < counter; i++) {
-                    if (expression[counter] == '(') {
-                        stack->pop();
-                        break;
-                    }
-                    queue->append(stack->pop());
-                }
-                break;
-            case '+':
-            case '-':
-            case '*':
-            case '/':
-            case '^':
-                while(pre(stack->top()) >= pre(expression[counter])) {
-                    queue->append(stack->pop());
-                }
-                stack->push(expression[counter]);
-                break;
-            default:
-                // its a number
-                queue->append(expression[counter]);
-                break;
-        }
-        while(stack->top() != NULL) {
-            queue->append(stack->pop());
-        }
-    }
-    return queue;
+bool hasHigherPrecedence(char in1, char in2) {
+    return (getPrecedence(in1) >= getPrecedence(in2));
 }
 
-Stack<float>* evaluatePostfix(Queue<char>* queue) {
-    Stack<float> *stack = new Stack<float>();
-    while(!queue->isEmpty()) {
-        switch(queue->first->data) {
-            case '+':
-            case '-':
-            case '*':
-            case '/':
-            case '^':
-            default:
-                //stack->push()
-                break;
+bool isOperand(char in) {
+    if (in >= '0' && in <= '9') return true;
+    else if (in >= 'a' && in <= 'z') return true;
+    else if (in >= 'A' && in <= 'Z') return true;
+    else return false;
+}
+
+bool isOperator(char in) {
+    switch (in) {
+        case '+':
+        case '-':
+        case '*':
+        case '/':
+            return true;
+        default:
+            return false;
+    }
+}
+
+void infixToPostfix(Queue<char>* postfix, std::string expr) {
+    Stack<char> tmpStack;
+    int n = expr.length();
+    for (int i = 0; i < n; i++) {
+        char next = expr[i];
+
+        if (isOperand(next)) {
+            postfix->append(next);
+        } else if (isOperator(next)) {
+            while (!tmpStack.isEmpty() && hasHigherPrecedence(tmpStack.top(), next) && tmpStack.top() != '(') {
+                postfix->append(tmpStack.pop());
+            }
+            tmpStack.push(next);
+        } else if (next == '(') {
+            tmpStack.push(next);
+        } else if (next == ')') {
+            while (tmpStack.top() != '(' && !tmpStack.isEmpty()) {
+                postfix->append(tmpStack.pop());
+            }
+            if(!tmpStack.isEmpty()) tmpStack.pop();
+        } else {
+            std::cerr << "SOMETHING HAPPENED" << '\n';
+            return;
         }
     }
-    return stack;
+    while (!tmpStack.isEmpty()) {
+        postfix->append(tmpStack.pop());
+    }
+}
+
+float evaluatePostfix(Queue<char>* postfix) {
+    Stack<float>* result = new Stack<float>();
+    while(!postfix->isEmpty()) {
+        if (isOperand(postfix->front())) {
+            int conv = postfix->serve();
+            result->push(conv/1f);
+        } else if (isOperator(postfix->front())) {
+            float var1 = result->pop();
+            float var2 = result->pop();
+            switch(postfix->front()) {
+                case '+':
+                    result->push(var1 + var2);
+                    break;
+                case '-':
+                    result->push(var1 - var2);
+                    break;
+                case '*':
+                    result->push(var1 * var2);
+                    break;
+                case '/':
+                    result->push(var1 / var2);
+                    break;
+                default:
+                    std::cerr << "SOMETHING HAPPENED" << '\n';
+                    break;
+            }
+        }
+    }
+    return result->pop();
+}
+
+float calcInfix(std::string line) {
+    Queue<char>* postfix = new Queue<char>();
+    std::cout << "Given: " << line << '\n';
+    infixToPostfix(postfix, line);
+    std::cout << "Postfix: " << '\n';
+    postfix->display();
+    return evaluatePostfix(postfix);
 }
 
 int main() {
     std::string contents[100];
     int size = readFile(contents, "a2.txt");
     for (int i = 0; i < size; i++) {
-        Queue<char> *queue = infixToPostfix(contents[i]);
-        while(!queue->isEmpty()) {
-            std::cout << queue->serve() << '\n';
-        }
+        std::cout << "Result: " << calcInfix(contents[i]) << '\n';
     }
     return 0;
 }
