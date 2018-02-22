@@ -4,7 +4,7 @@
 
     David Cutting
     Assignment 2
-    February 25, 2018
+    February 21, 2018
 
 */
 
@@ -278,18 +278,25 @@ float calcInfix(std::string line) {
     Queue<char>* postfix = new Queue<char>();
     std::cout << "\n--------------------------" << '\n';
     std::cout << "Given: " << line << '\n';
+
     infixToPostfix(postfix, line);
     std::cout << "\nPostfix: " << '\n';
     postfix->display();
-    return evaluatePostfix(postfix);
+
+    float result = evaluatePostfix(postfix);
+    std::cout << "\nResult: " << result << '\n';
+    std::cout << "--------------------------" << '\n';
+    return result;
 }
 
 int main() {
     std::string contents[100];
-    int size = readFile(contents, "a2.txt");
+    char fileName[] = "a2.txt";
+    int size = readFile(contents, fileName);
+    float sum = 0;
     for (int i = 0; i < size; i++) {
-        std::cout << "Result: " << calcInfix(contents[i]) << '\n';
-        std::cout << "--------------------------" << '\n';
+        sum += calcInfix(contents[i]);
     }
+    std::cout << "Total: " << sum << '\n';
     return 0;
 }
