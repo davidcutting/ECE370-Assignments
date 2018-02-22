@@ -57,15 +57,18 @@ class Queue {
         Node<T>* last;
 
         void append(T data) {
-            last = new Node<T>(data, last);
+            if(last == NULL) last = new Node<T>(data, last);
+            else {
+                Node<T>* oldLast = last;
+                last = new Node<T>(data, oldLast->link);
+                oldLast->link = last;
+            }
             if(first == NULL) first = last;
         }
 
         T serve() {
-            Node<T>* tmp = first;
             T popped = first->data;
             first = first->link;
-            delete tmp;
             return popped;
         }
 
@@ -79,11 +82,11 @@ class Queue {
 
         void display() {
             Node<T>* next = first;
-            std::cout << "Queue: " << '\n';
             while(next != NULL) {
-                std::cout << "  " << next->data << '\n';
+                std::cout << " " << next->data;
                 next = next->link;
             }
+            std::cout << '\n';
         }
 
         Queue() {
@@ -234,25 +237,35 @@ float evaluatePostfix(Queue<char>* postfix) {
     Stack<float>* result = new Stack<float>();
     while(!postfix->isEmpty()) {
         if (isOperand(postfix->front())) {
-            int conv = postfix->serve();
-            result->push(conv/1f);
+            float conv = (float) (postfix->serve() - '0');
+            result->push(conv);
         } else if (isOperator(postfix->front())) {
-            float var1 = result->pop();
             float var2 = result->pop();
+            float var1 = result->pop();
+            float v;
             switch(postfix->front()) {
                 case '+':
-                    result->push(var1 + var2);
+                    v = var1 + var2;
+                    result->push(v);
+                    postfix->serve();
                     break;
                 case '-':
-                    result->push(var1 - var2);
+                    v = var1 - var2;
+                    result->push(v);
+                    postfix->serve();
                     break;
                 case '*':
-                    result->push(var1 * var2);
+                    v = var1 * var2;
+                    result->push(v);
+                    postfix->serve();
                     break;
                 case '/':
-                    result->push(var1 / var2);
+                    v = var1 / var2;
+                    result->push(v);
+                    postfix->serve();
                     break;
                 default:
+                    postfix->serve();
                     std::cerr << "SOMETHING HAPPENED" << '\n';
                     break;
             }
@@ -263,9 +276,10 @@ float evaluatePostfix(Queue<char>* postfix) {
 
 float calcInfix(std::string line) {
     Queue<char>* postfix = new Queue<char>();
+    std::cout << "\n--------------------------" << '\n';
     std::cout << "Given: " << line << '\n';
     infixToPostfix(postfix, line);
-    std::cout << "Postfix: " << '\n';
+    std::cout << "\nPostfix: " << '\n';
     postfix->display();
     return evaluatePostfix(postfix);
 }
@@ -275,6 +289,7 @@ int main() {
     int size = readFile(contents, "a2.txt");
     for (int i = 0; i < size; i++) {
         std::cout << "Result: " << calcInfix(contents[i]) << '\n';
+        std::cout << "--------------------------" << '\n';
     }
     return 0;
 }
