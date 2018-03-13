@@ -30,14 +30,14 @@ class ClosedHash {
             this->b = b;
             this->c = c;
             closedhashb = size;
-            std::string aadf[size];
-            table = aadf; // TODO: iasfljhadljsgsljhfdsljh
+            table = new std::string[size];
             for(int i = 0; i < size; i++) {
                 table[i] = "";
             }
         }
 
         int linear_find(std::string value) {
+            if(value == "") return -1;
             int hash = get_hash(value);
             int count = 0;
             while(table[hash] != "") {
@@ -48,6 +48,7 @@ class ClosedHash {
         }
 
         void linear_put(std::string value) {
+            if(value == "") return;
             int hash = get_hash(value);
             while(table[hash] != "") {
                 hash = (hash + 1) % closedhashb;
@@ -80,6 +81,13 @@ class ClosedHash {
 main.cpp
 
 */
+std::string to_uppercase(std::string& lower) {
+    std::string upper = "";
+    for(char c : lower) {
+        upper += std::toupper(c);
+    }
+    return upper;
+}
 
 int read_file(std::string* file_content, char* file_name) {
     std::fstream file;
@@ -92,7 +100,7 @@ int read_file(std::string* file_content, char* file_name) {
         {
             if(line == "")
                 continue;
-            file_content[counter] = line;
+            file_content[counter] = to_uppercase(line);
             counter++;
         }
     }
@@ -101,10 +109,10 @@ int read_file(std::string* file_content, char* file_name) {
 }
 
 std::vector<std::string> split(std::string delimiter, std::string s) {
-    int last = 0;
-    int next = 0;
+    size_t last = 0;
+    size_t next = 0;
     std::vector<std::string> chopped;
-    while(next = s.find(delimiter, last)) != std::string::npos) {
+    while((next = s.find(delimiter, last)) != std::string::npos) {
         chopped.push_back(s.substr(last, next - last));
         last = next + delimiter.length();
     }
@@ -122,6 +130,7 @@ int main() {
     ClosedHash c_hash(60, a, b, c);
 
     for(int i = 1; i < 60; i++) {
+
         c_hash.linear_put(contents[i]);
     }
 }
