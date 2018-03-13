@@ -8,6 +8,12 @@
 
 */
 
+#include <cstddef>
+#include <vector>
+#include <iostream>
+#include <fstream>
+#include <string>
+
 /**
 
 ClosedHash
@@ -20,14 +26,15 @@ class ClosedHash {
     public:
 
         ClosedHash(int size, int a, int b, int c) {
-            closedhashb = size;
-            table = new std::string(size);
-            for(int i = 0; i < size; i++) {
-                table[i] = "";
-            }
             this->a = a;
             this->b = b;
             this->c = c;
+            closedhashb = size;
+            std::string aadf[size];
+            table = aadf; // TODO: iasfljhadljsgsljhfdsljh
+            for(int i = 0; i < size; i++) {
+                table[i] = "";
+            }
         }
 
         int linear_find(std::string value) {
@@ -46,6 +53,7 @@ class ClosedHash {
                 hash = (hash + 1) % closedhashb;
             }
             table[hash] = value;
+            std::cout << "Put " << value << ": " << hash << '\n';
         }
 
         int get_size() {
@@ -54,11 +62,11 @@ class ClosedHash {
 
     private:
 
-        std::string* table;
         int a;
         int b;
         int c;
         int closedhashb;
+        std::string* table;
 
         int get_hash(std::string value) {
             return (a * value[0] + b * value[1] + c * value[2]) % closedhashb;
@@ -96,24 +104,24 @@ std::vector<std::string> split(std::string delimiter, std::string s) {
     int last = 0;
     int next = 0;
     std::vector<std::string> chopped;
-    while((next == s.find(delimiter, last)) != string::npos) {
-        chopped.append(s.substr(last, next - last));
+    while(next = s.find(delimiter, last)) != std::string::npos) {
+        chopped.push_back(s.substr(last, next - last));
         last = next + delimiter.length();
     }
-    chopped.append(s.substr(last));
+    chopped.push_back(s.substr(last));
+    return chopped;
 }
 
 int main() {
     std::string contents[60];
     char file_name[] = "a3.txt";
     read_file(contents, file_name);
-    int a = -1;
-    int b = -1;
-    int c = -1;
-    for(auto s : split(contents[0])) {
-        if(a == -1) a = s;
-        else if(b == -1) b = s;
-        else if(c == -1) c = s;
-    }
+    int a = stoi(split(" ", contents[0])[0]);
+    int b = stoi(split(" ", contents[0])[1]);
+    int c = stoi(split(" ", contents[0])[2]);
     ClosedHash c_hash(60, a, b, c);
+
+    for(int i = 1; i < 60; i++) {
+        c_hash.linear_put(contents[i]);
+    }
 }
