@@ -10,95 +10,58 @@
 
 /**
 
-HashNode
+ClosedHash
 
 */
-#ifndef HASHNODE_H
-#define HASHNODE_H
+#ifndef CLOSEDHASH_H
+#define CLOSEDHASH_H
 
-template <class K>
-template <class V>
-class HashNode {
+class ClosedHash {
     public:
 
-        HashNode(K key, V value) {
-            this->key = key;
-            this->value = value;
-        }
-
-        K get_key() {
-            return this->key;
-        }
-
-        V get_value() {
-            return this->value;
-        }
-
-    private:
-
-        K key;
-        V value;
-};
-
-#endif
-
-/**
-
-HashNode
-
-*/
-#ifndef HASHTABLE_H
-#define HASHTABLE_H
-
-template <class K>
-template <class V>
-class HashTable {
-    public:
-
-        HashMap(int size) {
-            hash_size = size;
-            table = new HashNode*[size];
+        ClosedHash(int size, int a, int b, int c) {
+            closedhashb = size;
+            table = new std::string(size);
             for(int i = 0; i < size; i++) {
-                table[i] = NULL;
+                table[i] = "";
             }
+            this->a = a;
+            this->b = b;
+            this->c = c;
         }
 
-        V linear_find(std::string value) {
-            int hash = get_hash();
-            while(table[hash] != NULL && table[hash]->get_key() != key) {
-                hash = (hash + 1) % hash_size;
-            }
-            if (table[hash] != NULL) {
-                return table[hash]->get_value();
-            }
-            return NULL;
-        }
-
-        void linear_put(K key, std::string value) {
+        int linear_find(std::string value) {
             int hash = get_hash(value);
-            while(table[hash] != NULL && table[hash]->get_key() != key) {
-                hash = (hash + 1) % hash_size;
+            int count = 0;
+            while(table[hash] != "") {
+                hash = (hash + 1) % closedhashb;
+                count++;
             }
-            if (table[hash] != NULL) {
-                delete table[hash];
+            return count;
+        }
+
+        void linear_put(std::string value) {
+            int hash = get_hash(value);
+            while(table[hash] != "") {
+                hash = (hash + 1) % closedhashb;
             }
-            table[hash] = new HashNode<K,std::string>(key, value);
+            table[hash] = value;
         }
 
         int get_size() {
-            return this->hash_size;
+            return this->closedhashb;
         }
 
     private:
 
-        HashNode** table;
+        std::string* table;
         int a;
         int b;
         int c;
-        int hash_size = 60;
+        int closedhashb;
 
         int get_hash(std::string value) {
-            return (a * value[0] + b * value[1] + c * value[2]) % hash_size;
+            return (a * value[0] + b * value[1] + c * value[2]) % closedhashb;
         }
 };
 
@@ -114,12 +77,12 @@ int read_file(std::string* file_content, char* file_name) {
     std::fstream file;
     file.open(file_name, std::ios::in);
     int counter = 0;
-    if (file.is_open())
+    if(file.is_open())
     {
         std::string line;
-        while (getline(file, line))
+        while(getline(file, line))
         {
-            if (line == "")
+            if(line == "")
                 continue;
             file_content[counter] = line;
             counter++;
@@ -129,8 +92,28 @@ int read_file(std::string* file_content, char* file_name) {
     return counter;
 }
 
+std::vector<std::string> split(std::string delimiter, std::string s) {
+    int last = 0;
+    int next = 0;
+    std::vector<std::string> chopped;
+    while((next == s.find(delimiter, last)) != string::npos) {
+        chopped.append(s.substr(last, next - last));
+        last = next + delimiter.length();
+    }
+    chopped.append(s.substr(last));
+}
+
 int main() {
     std::string contents[60];
     char file_name[] = "a3.txt";
     read_file(contents, file_name);
+    int a = -1;
+    int b = -1;
+    int c = -1;
+    for(auto s : split(contents[0])) {
+        if(a == -1) a = s;
+        else if(b == -1) b = s;
+        else if(c == -1) c = s;
+    }
+    ClosedHash c_hash(60, a, b, c);
 }
