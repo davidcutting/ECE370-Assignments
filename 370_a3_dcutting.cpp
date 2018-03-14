@@ -12,6 +12,7 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
+#include <cstring>
 #include <string>
 
 /**
@@ -66,7 +67,7 @@ class ClosedHash {
             linear_put_steps++;
             char nl = ' ';
             if(linear_put_steps%4 == 0) nl = '\n';
-            std::cout << "  " << value << ": " << nrehash << "  " << nl;
+            printf(" %-15s: %-2d %c", value.c_str(), nrehash, nl);
         }
 
         void quad_put(std::string value) {
@@ -74,14 +75,14 @@ class ClosedHash {
             int hash = get_hash(value);
             int nrehash = 1;
             while(table[hash] != "") {
-                hash = (hash + nrehash*nrehash) % closedhashb;
+                hash = (hash + (nrehash*nrehash)) % closedhashb;
                 nrehash++;
             }
             table[hash] = value;
             quad_put_steps++;
             char nl = ' ';
             if(quad_put_steps%4 == 0) nl = '\n';
-            std::cout << "  " << value << ": " << nrehash << "  " << nl;
+            printf(" %-15s: %-2d %c", value.c_str(), nrehash, nl);
         }
 
         void quad_find(std::string value) {
@@ -89,15 +90,18 @@ class ClosedHash {
             int hash = get_hash(value);
             int nrehash = 1;
             while(table[hash] != "") {
-                hash = (hash + nrehash*nrehash) % closedhashb;
+                hash = (hash + (nrehash*nrehash)) % closedhashb;
                 nrehash++;
                 quad_find_steps++;
             }
         }
 
         void print_table() {
+            std::cout << "--------------------------------------------" << '\n';
+            std::cout << "                 HASH TABLE                 " << '\n';
+            std::cout << "--------------------------------------------" << '\n';
             for(int i = 0; i < closedhashb; i++) {
-                std::cout << "" << '\n';
+                printf("%-3d: %-15s %c", i, table[i].c_str(), i % 4 == 3 ? '\n' : ' ');
             }
         }
 
@@ -125,6 +129,20 @@ class ClosedHash {
 main.cpp
 
 */
+void get_summary(ClosedHash l60, ClosedHash l120, ClosedHash q60, ClosedHash q120) {
+    std::cout << "--------------------------------------------" << '\n';
+    std::cout << "                   SUMMARY                  " << '\n';
+    std::cout << "--------------------------------------------" << '\n';
+    std::cout << "|==========================================|" << '\n';
+    std::cout << "|     SIZE    ||     60     ||     120     |" << '\n';
+    std::cout << "|==========================================|" << '\n';
+    printf(      "|    LINEAR   || %-11f|| %-11f | \n", l60.linear_find_steps/60.0, l120.linear_find_steps/120.0);
+    std::cout << "|==========================================|" << '\n';
+    printf(      "|  QUADRATIC  || %-11f|| %-11f | \n", q60.quad_find_steps/60.0, q120.quad_find_steps/120.0);
+    std::cout << "|==========================================|" << '\n';
+    std::cout << "--------------------------------------------" << '\n';
+}
+
 std::string to_uppercase(std::string& lower) {
     std::string upper = "";
     for(char c : lower) {
@@ -171,10 +189,54 @@ int main() {
     int a = stoi(split(" ", contents[0])[0]);
     int b = stoi(split(" ", contents[0])[1]);
     int c = stoi(split(" ", contents[0])[2]);
-    ClosedHash c_hash(60, a, b, c);
-
+    ClosedHash c_hash60(60, a, b, c);
+    ClosedHash c_hash120(120, a, b, c);
+    std::cout << '\n';
+    std::cout << "--------------------------------------------" << '\n';
+    std::cout << "              LINEAR REHASH - 60            " << '\n';
+    std::cout << "--------------------------------------------" << '\n';
     for(int i = 1; i < 60; i++) {
-
-        c_hash.linear_put(contents[i]);
+        c_hash60.linear_put(contents[i]);
+        c_hash60.linear_find(contents[i]);
     }
+    std::cout << '\n';
+    c_hash60.print_table();
+    std::cout << '\n';
+
+    std::cout << "--------------------------------------------" << '\n';
+    std::cout << "            LINEAR REHASH - 120             " << '\n';
+    std::cout << "--------------------------------------------" << '\n';
+    for(int i = 1; i < 60; i++) {
+        c_hash120.linear_put(contents[i]);
+        c_hash120.linear_find(contents[i]);
+    }
+    std::cout << '\n';
+    c_hash120.print_table();
+    std::cout << '\n';
+
+    ClosedHash qc_hash60(60, a, b, c);
+    ClosedHash qc_hash120(120, a, b, c);
+    std::cout << "--------------------------------------------" << '\n';
+    std::cout << "           QUADRATIC REHASH - 60            " << '\n';
+    std::cout << "--------------------------------------------" << '\n';
+    for(int i = 1; i < 60; i++) {
+        qc_hash60.quad_put(contents[i]);
+        qc_hash60.quad_find(contents[i]);
+    }
+    std::cout << '\n';
+    qc_hash60.print_table();
+    std::cout << '\n';
+
+    std::cout << "--------------------------------------------" << '\n';
+    std::cout << "           QUADRATIC REHASH - 120           " << '\n';
+    std::cout << "--------------------------------------------" << '\n';
+    for(int i = 1; i < 60; i++) {
+        qc_hash120.quad_put(contents[i]);
+        qc_hash120.quad_find(contents[i]);
+    }
+    std::cout << '\n';
+    qc_hash120.print_table();
+    std::cout << '\n';
+
+    get_summary(c_hash60, c_hash120, qc_hash60, qc_hash120);
 }
