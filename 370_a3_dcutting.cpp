@@ -57,31 +57,47 @@ class ClosedHash {
         void linear_put(std::string value) {
             if(value == "") return;
             int hash = get_hash(value);
+            int nrehash = 1;
             while(table[hash] != "") {
                 hash = (hash + 1) % closedhashb;
-                linear_put_steps++;
+                nrehash++;
             }
             table[hash] = value;
-            std::cout << "Put " << value << ": " << hash << '\n';
+            linear_put_steps++;
+            char nl = ' ';
+            if(linear_put_steps%4 == 0) nl = '\n';
+            std::cout << "  " << value << ": " << nrehash << "  " << nl;
         }
 
         void quad_put(std::string value) {
             if(value == "") return;
             int hash = get_hash(value);
+            int nrehash = 1;
             while(table[hash] != "") {
-                hash = (hash + quad_put_steps**2) % closedhashb;
-                quad_put_steps++;
+                hash = (hash + nrehash*nrehash) % closedhashb;
+                nrehash++;
             }
             table[hash] = value;
-            std::cout << "Put " << value << ": " << hash << '\n';
+            quad_put_steps++;
+            char nl = ' ';
+            if(quad_put_steps%4 == 0) nl = '\n';
+            std::cout << "  " << value << ": " << nrehash << "  " << nl;
         }
 
         void quad_find(std::string value) {
             if(value == "") return;
             int hash = get_hash(value);
+            int nrehash = 1;
             while(table[hash] != "") {
-                hash = (hash + quad_find_steps**2) % closedhashb;
+                hash = (hash + nrehash*nrehash) % closedhashb;
+                nrehash++;
                 quad_find_steps++;
+            }
+        }
+
+        void print_table() {
+            for(int i = 0; i < closedhashb; i++) {
+                std::cout << "" << '\n';
             }
         }
 
