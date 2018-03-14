@@ -25,7 +25,16 @@ ClosedHash
 class ClosedHash {
     public:
 
+        int linear_put_steps;
+        int quad_put_steps;
+        int linear_find_steps;
+        int quad_find_steps;
+
         ClosedHash(int size, int a, int b, int c) {
+            linear_put_steps = 0;
+            quad_put_steps = 0;
+            linear_find_steps = 0;
+            quad_find_steps = 0;
             this->a = a;
             this->b = b;
             this->c = c;
@@ -36,15 +45,13 @@ class ClosedHash {
             }
         }
 
-        int linear_find(std::string value) {
-            if(value == "") return -1;
+        void linear_find(std::string value) {
+            if(value == "") return;
             int hash = get_hash(value);
-            int count = 0;
             while(table[hash] != "") {
                 hash = (hash + 1) % closedhashb;
-                count++;
+                linear_find_steps++;
             }
-            return count;
         }
 
         void linear_put(std::string value) {
@@ -52,9 +59,30 @@ class ClosedHash {
             int hash = get_hash(value);
             while(table[hash] != "") {
                 hash = (hash + 1) % closedhashb;
+                linear_put_steps++;
             }
             table[hash] = value;
             std::cout << "Put " << value << ": " << hash << '\n';
+        }
+
+        void quad_put(std::string value) {
+            if(value == "") return;
+            int hash = get_hash(value);
+            while(table[hash] != "") {
+                hash = (hash + quad_put_steps**2) % closedhashb;
+                quad_put_steps++;
+            }
+            table[hash] = value;
+            std::cout << "Put " << value << ": " << hash << '\n';
+        }
+
+        void quad_find(std::string value) {
+            if(value == "") return;
+            int hash = get_hash(value);
+            while(table[hash] != "") {
+                hash = (hash + quad_find_steps**2) % closedhashb;
+                quad_find_steps++;
+            }
         }
 
         int get_size() {
