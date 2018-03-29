@@ -74,11 +74,11 @@ class LinkedList {
             head = NULL;
         }
 
-        void put(T const& input) {
+        void put(T input) {
             head = new Node<T>(input, head);
         }
 
-        void put(T const& input, int index) {
+        void put(T input, int index) {
             if (index < 0) {
                 std::cerr << "Negative Index Error: cannot put " << input << " at " << index << '\n';
                 return;
@@ -156,6 +156,18 @@ class LinkedList {
             std::cout << "index = " << index << '\n';
             searched->get_data().print();
         }
+
+        void printAll(std::string name) const {
+            int count = 0;
+            Node<T>* searched = head;
+            while(searched != NULL) {
+                std::cout << "--- " << name << " ---" << '\n';
+                std::cout << "index = " << count << '\n';
+                searched->get_data().print();
+                searched = searched->get_next();
+                count++;
+            }
+        }
 };
 
 #endif
@@ -197,7 +209,9 @@ class Student {
         }
 
         bool operator!= (Student const& st) const {
-            return  this->get_score() != st.get_score();
+            bool score = this->get_score() != st.get_score();
+            bool name = this->get_name() != st.get_name();
+            return score || name;
         }
 };
 
@@ -287,9 +301,7 @@ class StudentRecord {
         }
 
         void print_records() const {
-            for(int i = 0; i < size; i++) {
-                student_records->print(i, "Student Record");
-            }
+            student_records->printAll("Student Record");
         }
 
         void sort_asc() {
@@ -362,20 +374,29 @@ int main() {
             counter++;
             continue;
         } else if (next_line[0] == '%') {
+            std::cout << next_line << " starts with %" << '\n';
             terminate = records->change_mode(next_line);
         } else {
             std::string s_name = split(" ", next_line)[0];
             int s_score = stoi(split(" ", next_line)[1]);
             Student* std = new Student(s_name, s_score);
+            std::cout << "Input: " << '\n';
+            std::cout << "- name = " << s_name << '\n';
+            std::cout << "- score = " << s_score << '\n';
+            std::cout << "Student: " << '\n';
+            std->print();
 
             switch(records->get_mode()) {
                 case RecordMode::INSERT:
+                    std::cout << "Inserting " << std->get_name() << '\n';
                     records->insert(*std);
                     break;
                 case RecordMode::DELETE:
+                    std::cout << "Deleting " << std->get_name() << '\n';
                     records->remove(*std);
                     break;
                 case RecordMode::SEARCH:
+                    std::cout << "Searching for " << std->get_name() << '\n';
                     records->search(*std);
                     break;
                 default:
