@@ -33,20 +33,20 @@ class Node {
             link = NULL;
         }
 
-        Node(T ndata, Node<T>* nlink) {
+        Node(T const& ndata, Node<T>* nlink) {
             data = ndata;
             link = nlink;
         }
 
-        T get_data() {
+        T const& get_data() const {
             return data;
         }
 
-        void set_data(T data) {
+        void set_data(T const& data) {
             this->data = data;
         }
 
-        Node<T>* get_next() {
+        Node<T>* get_next() const {
             return link;
         }
 
@@ -67,12 +67,18 @@ LinkedList
 
 template <class T>
 class LinkedList {
+    private:
+        Node<T>* head;
     public:
         LinkedList() {
             head = NULL;
         }
 
-        void put(T input, int index) {
+        void put(T const& input) {
+            head = new Node<T>(input, head);
+        }
+
+        void put(T const& input, int index) {
             if (index < 0) {
                 std::cerr << "Negative Index Error: cannot put " << input << " at " << index << '\n';
                 return;
@@ -93,11 +99,7 @@ class LinkedList {
             }
         }
 
-        void put(T input) {
-            head = new Node<T>(input, head);
-        }
-
-        T get(int index) {
+        T const& get(int index) const {
             int count = 0;
             Node<T>* searched;
             while(count < index) {
@@ -107,33 +109,33 @@ class LinkedList {
             return searched->data;
         }
 
-        T remove(int index) {
+        void remove(int index) {
             Node<T>* deleted;
             if (index < 0) {
                 std::cerr << "Negative Index Error: cannot remove at " << index << '\n';
                 return;
             } else if (index == 0) {
                 deleted = head;
-                head = head->get_link();
+                head = head->get_next();
                 delete deleted;
                 return;
             } else {
                 Node<T> *previous = head;
-                Node<T> *current = previous->get_link();
+                Node<T> *current = previous->get_next();
                 int count = 1;
                 while(count < index) {
                     previous = current;
-                    current = previous->get_link();
+                    current = previous->get_next();
                     count++;
                 }
                 deleted = current;
-                previous->set_next(deleted->get_next())
+                previous->set_next(deleted->get_next());
                 delete deleted;
                 return;
             }
         }
 
-        int find(T key) {
+        int find(T const& key) const {
             int i = 0;
             Node<T>* found = head;
             while(key != found->get_data()) {
@@ -143,8 +145,17 @@ class LinkedList {
             return i;
         }
 
-    private:
-        Node *head;
+        void print(int index, std::string name) const {
+            int count = 0;
+            Node<T>* searched;
+            while(count < index) {
+                searched = searched->get_next();
+                count++;
+            }
+            std::cout << "--- " << name << " ---" << '\n';
+            std::cout << "index = " << index << '\n';
+            searched->get_data().print();
+        }
 };
 
 #endif
@@ -167,12 +178,21 @@ class Student {
             this->score = score;
         }
 
-        std::string get_name() {
+        std::string get_name() const {
             return name;
         }
 
-        int get_score() {
+        int get_score() const {
             return score;
+        }
+
+        void print() const {
+            std::cout << "name = " << name << '\n';
+            std::cout << "score = " << score << '\n';
+        }
+
+        bool operator!= (Student const& st) const {
+            return  this->get_score() != st.get_score();
         }
 };
 
@@ -206,41 +226,73 @@ class StudentRecord {
     private:
         LinkedList<Student>* student_records;
         RecordMode mode;
+        int size;
     public:
         StudentRecord() {
             this->student_records = new LinkedList<Student>();
             mode = RecordMode::INSERT;
+            size = 0;
         }
 
         // returns whether or not the program should terminate
         bool change_mode(std::string command) {
-            switch(command) {
-                case "%INSERT":
-                    mode = RecordMode::INSERT;
-                    return false;
-                case "%VISIT":
-
-                case "%DELETE":
-                    mode = RecordMode::DELETE;
-                    return false;
-                case "%SEARCH":
-                    mode = RecordMode::SEARCH;
-                    return false;
-                case "%SORTASC":
-                case "%SORTDES":
-                case "%END":
-                    return true;
-                default:
-                    return false;
+            if (command == "%INSERT") {
+                mode = RecordMode::INSERT;
+                return false;
+            } else if (command == "%VISIT") {
+                print_records();
+                return false;
+            } else if (command == "%DELETE") {
+                mode = RecordMode::DELETE;
+                return false;
+            } else if (command == "%SEARCH") {
+                mode = RecordMode::SEARCH;
+                return false;
+            } else if (command == "%SORTASC") {
+                sort_asc();
+                return false;
+            } else if (command == "%SORTDES") {
+                sort_des();
+                return false;
+            } else if (command == "%END") {
+                return true;
+            } else {
+                return false;
             }
         }
 
-        RecordMode get_mode() {
+        void insert(Student const& st) {
+            student_records->put(st);
+            size++;
+        }
+
+        void remove(Student const& st) {
+            int index = student_records->find(st);
+            student_records->remove(index);
+            size--;
+        }
+
+        void search(Student const& st) const {
+            int index = student_records->find(st);
+            student_records->print(index, "Record Found");
+        }
+
+        RecordMode const& get_mode() const {
             return mode;
         }
 
-        void print_records() {
-            student_records->print();
+        void print_records() const {
+            for(int i = 0; i < size; i++) {
+                student_records->print(i, "Student Record");
+            }
+        }
+
+        void sort_asc() {
+
+        }
+
+        void sort_des() {
+
         }
 };
 
@@ -251,6 +303,14 @@ class StudentRecord {
 main
 
 */
+std::string to_uppercase(std::string& lower) {
+    std::string upper = "";
+    for(char c : lower) {
+        upper += std::toupper(c);
+    }
+    return upper;
+}
+
 int read_file(std::string* file_content, char* file_name) {
     std::fstream file;
     file.open(file_name, std::ios::in);
@@ -291,7 +351,7 @@ int main() {
     int counter = 0;
     bool terminate = false;
 
-    while (terminate != true) {
+    while (terminate != true || counter < size) {
         std::string next_line = contents[counter];
         if (next_line == "") {
             counter++;
@@ -299,10 +359,20 @@ int main() {
         } else if (next_line[0] == '%') {
             terminate = records->change_mode(next_line);
         } else {
+            std::string s_name = split(" ", next_line)[0];
+            int s_score = stoi(split(" ", next_line)[1]);
+            Student* std = new Student(s_name, s_score);
+
             switch(records->get_mode()) {
                 case RecordMode::INSERT:
+                    records->insert(*std);
+                    break;
                 case RecordMode::DELETE:
+                    records->remove(*std);
+                    break;
                 case RecordMode::SEARCH:
+                    records->search(*std);
+                    break;
                 default:
                     terminate = true;
             }
