@@ -173,6 +173,11 @@ class Student {
         std::string name;
         int score;
     public:
+        Student() {
+            this->name = "";
+            this->score = 0;
+        }
+
         Student(std::string name, int score) {
             this->name = name;
             this->score = score;
