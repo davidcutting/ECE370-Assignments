@@ -287,6 +287,7 @@ class StudentRecord {
 
         void remove(Student const& st) {
             int index = student_records->find(st);
+            std::cout << "Preparing to remove " << st.get_name() << " at index " << index << '\n';
             student_records->remove(index);
             size--;
         }
@@ -379,25 +380,25 @@ int main() {
         } else {
             std::string s_name = split(" ", next_line)[0];
             int s_score = stoi(split(" ", next_line)[1]);
-            Student* std = new Student(s_name, s_score);
+            Student std(s_name, s_score);
             std::cout << "Input: " << '\n';
             std::cout << "- name = " << s_name << '\n';
             std::cout << "- score = " << s_score << '\n';
             std::cout << "Student: " << '\n';
-            std->print();
+            std.print();
 
             switch(records->get_mode()) {
                 case RecordMode::INSERT:
-                    std::cout << "Inserting " << std->get_name() << '\n';
-                    records->insert(*std);
+                    std::cout << "Inserting " << std.get_name() << '\n';
+                    records->insert(std);
                     break;
                 case RecordMode::DELETE:
-                    std::cout << "Deleting " << std->get_name() << '\n';
-                    records->remove(*std);
+                    std::cout << "Deleting " << std.get_name() << '\n';
+                    records->remove(std);
                     break;
                 case RecordMode::SEARCH:
-                    std::cout << "Searching for " << std->get_name() << '\n';
-                    records->search(*std);
+                    std::cout << "Searching for " << std.get_name() << '\n';
+                    records->search(std);
                     break;
                 default:
                     terminate = true;
