@@ -320,9 +320,9 @@ class StudentRecord {
                 for(int i = 1; i < size; i++) {
                     if (unsorted[i-1] > unsorted[i]) {
                         std::swap(unsorted[i-1], unsorted[i]);
-                        sorted = true;
                     }
                 }
+                sorted = true;
             }
             for(int i = 0; i < size; i++) {
                 student_records->put(unsorted[i]);
@@ -340,9 +340,9 @@ class StudentRecord {
                 for(int i = 1; i < size; i++) {
                     if (unsorted[i-1] < unsorted[i]) {
                         std::swap(unsorted[i-1], unsorted[i]);
-                        sorted = true;
                     }
                 }
+                sorted = true;
             }
             for(int i = 0; i < size; i++) {
                 student_records->put(unsorted[i]);
