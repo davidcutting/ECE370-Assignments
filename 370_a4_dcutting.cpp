@@ -103,10 +103,10 @@ class LinkedList {
             int count = 0;
             Node<T>* searched;
             while(count < index) {
-                searched = searched->get_link();
+                searched = searched->get_next();
                 count++;
             }
-            return searched->data;
+            return searched->get_data();
         }
 
         void remove(int index) {
@@ -117,8 +117,6 @@ class LinkedList {
             } else if (index == 0) {
                 deleted = head;
                 head = head->get_next();
-                delete deleted;
-                return;
             } else {
                 Node<T> *previous = head;
                 Node<T> *current = previous->get_next();
@@ -130,9 +128,8 @@ class LinkedList {
                 }
                 deleted = current;
                 previous->set_next(deleted->get_next());
-                delete deleted;
-                return;
             }
+            delete deleted;
         }
 
         int find(T const& key) const {
@@ -213,6 +210,14 @@ class Student {
             bool name = this->get_name() != st.get_name();
             return score || name;
         }
+
+        bool operator> (Student const& st) const {
+            return this->get_score() > st.get_score();
+        }
+
+        bool operator< (Student const& st) const {
+            return this->get_score() < st.get_score();
+        }
 };
 
 #endif
@@ -287,7 +292,6 @@ class StudentRecord {
 
         void remove(Student const& st) {
             int index = student_records->find(st);
-            std::cout << "Preparing to remove " << st.get_name() << " at index " << index << '\n';
             student_records->remove(index);
             size--;
         }
@@ -306,11 +310,43 @@ class StudentRecord {
         }
 
         void sort_asc() {
-
+            Student unsorted[size];
+            for(int i = 0; i < size; i++) {
+                unsorted[i] = student_records->get(i);
+            }
+            if(size < 2) return;
+            bool sorted = false;
+            while(!sorted) {
+                for(int i = 1; i < size; i++) {
+                    if (unsorted[i-1] > unsorted[i]) {
+                        std::swap(unsorted[i-1], unsorted[i]);
+                        sorted = true;
+                    }
+                }
+            }
+            for(int i = 0; i < size; i++) {
+                student_records->put(unsorted[i]);
+            }
         }
 
         void sort_des() {
-
+            Student unsorted[size];
+            for(int i = 0; i < size; i++) {
+                unsorted[i] = student_records->get(i);
+            }
+            if(size < 2) return;
+            bool sorted = false;
+            while(!sorted) {
+                for(int i = 1; i < size; i++) {
+                    if (unsorted[i-1] < unsorted[i]) {
+                        std::swap(unsorted[i-1], unsorted[i]);
+                        sorted = true;
+                    }
+                }
+            }
+            for(int i = 0; i < size; i++) {
+                student_records->put(unsorted[i]);
+            }
         }
 };
 
@@ -375,29 +411,20 @@ int main() {
             counter++;
             continue;
         } else if (next_line[0] == '%') {
-            std::cout << next_line << " starts with %" << '\n';
             terminate = records->change_mode(next_line);
         } else {
             std::string s_name = split(" ", next_line)[0];
             int s_score = stoi(split(" ", next_line)[1]);
             Student std(s_name, s_score);
-            std::cout << "Input: " << '\n';
-            std::cout << "- name = " << s_name << '\n';
-            std::cout << "- score = " << s_score << '\n';
-            std::cout << "Student: " << '\n';
-            std.print();
 
             switch(records->get_mode()) {
                 case RecordMode::INSERT:
-                    std::cout << "Inserting " << std.get_name() << '\n';
                     records->insert(std);
                     break;
                 case RecordMode::DELETE:
-                    std::cout << "Deleting " << std.get_name() << '\n';
                     records->remove(std);
                     break;
                 case RecordMode::SEARCH:
-                    std::cout << "Searching for " << std.get_name() << '\n';
                     records->search(std);
                     break;
                 default:
