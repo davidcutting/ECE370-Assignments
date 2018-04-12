@@ -19,32 +19,22 @@ Quicksort
 
 */
 
-int find_pivot(int* a) {
-    if (a[0] > a[1]) {
-        return a[0];
-    } else if (a[1] > a[0]) {
-        return a[1];
+int partition(int* a, int left, int right) {
+    int p = a[right];
+    for (int i = left; i < right; i++) {
+        if (a[i] <= p) {
+            std::swap(a[left], a[i]);
+            left++;
+        }
     }
+    std::swap(a[left], a[right]);
+    return left;
 }
 
-int partition(int* input_array, int& left, int& right, int& pivot) {
-	while (left <= right) {
-		while (input_array[left] < pivot) left++;
-		while (input_array[right] > pivot) right--;
-		if (left <= right) {
-            std::swap(left, right);
-			left++;
-			right--;
-		}
-	}
-	return left;
-}
-
-void quicksort(int* a, int& left, int& right) {
-    int pivot = find_pivot(a);
-    int pi = partition(a, left, right, pivot);
-    quicksort(a, left, pi - 1);
-    quicksort(a, pi + 1, right);
+void quicksort(int* a, int const& min, int const& max) {
+    int p = partition(a, min, max);
+    quicksort(a, min, p - 1);
+    quicksort(a, p + 1, max);
 }
 
 /**
@@ -94,8 +84,6 @@ main
 
 */
 
-}
-
 int readFile(std::string* fileContent, char* fileName) {
     std::fstream file;
     file.open(fileName, std::ios::in);
@@ -117,12 +105,13 @@ int readFile(std::string* fileContent, char* fileName) {
 
 int main(int argc, char const* argv[]) {
     std::string file_contents[50];
-    int size = readFile(file_contents, "a5.txt");
+    char file_name[] = "a5.txt";
+    int size = readFile(file_contents, file_name);
     int qsort_nums[size];
     int hsort_nums[size];
     for(int i = 0; i < size; i++) {
-        qsort_nums = stoi(file_contents[i]);
-        hsort_nums = stoi(file_contents[i]);
+        qsort_nums[i] = stoi(file_contents[i]);
+        hsort_nums[i] = stoi(file_contents[i]);
     }
 
     int left = 0;
