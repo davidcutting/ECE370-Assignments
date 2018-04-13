@@ -20,9 +20,8 @@ Quicksort
 */
 
 int partition(int* a, int left, int right) {
-    int p = a[right];
     for (int i = left; i < right; i++) {
-        if (a[i] <= p) {
+        if (a[i] <= a[right]) {
             std::swap(a[left], a[i]);
             left++;
         }
@@ -31,10 +30,18 @@ int partition(int* a, int left, int right) {
     return left;
 }
 
-void quicksort(int* a, int const& min, int const& max) {
-    int p = partition(a, min, max);
-    quicksort(a, min, p - 1);
-    quicksort(a, p + 1, max);
+void quicksort(int* a, int min, int max) {
+    if (min < max) {
+        int p = partition(a, min, max);
+        std::cout << "Pivot: " << p << ", ";
+        for(int i = 0; i < max; i++) {
+            std::cout << a[i] << " ";
+        }
+        std::cout << std::flush;
+        std::cout << '\n';
+        quicksort(a, min, p - 1);
+        quicksort(a, p, max);
+    }
 }
 
 /**
@@ -56,25 +63,36 @@ void heapify(int* a, int root, int size) {
 
     if (right < size) { // right child > max
         if (a[right] > a[max]) {
-            max = left;
+            max = right;
         }
     }
 
     if (max != root) { // if the max is not the root
         std::swap(a[root], a[max]);
-        heapify(a, root, max);
+        heapify(a, max, size);
     }
 }
 
+// all loops are done backwards to put arrays in ascending order
 void heapsort(int* a, int size) {
     // first build the heap
-    for (int i = size/2; i >= 1; i--) {
+    std::cout << "Building the Heap:" << '\n';
+    for (int i = size/2 -1; i >= 0; i--) {
+        for(int j = 0; j < 10; j++) { // print out the first 10
+            std::cout << a[j] << " ";
+        }
+        std::cout << '\n';
         heapify(a, i, size);
     }
     // sort the heap
-    for (int i = size; i >= 2; i--) {
-        std::swap(a[1], a[i]);
-        heapify(a, 1, i - 1);
+    std::cout << "Sorting the Heap:" << '\n';
+    for (int i = size - 1; i >= 0; i--) {
+        std::swap(a[0], a[i]);
+        for(int j = 0; j < 10; j++) { // print out the first 10
+            std::cout << a[j] << " ";
+        }
+        std::cout << '\n';
+        heapify(a, 0, i);
     }
 }
 
@@ -114,8 +132,29 @@ int main(int argc, char const* argv[]) {
         hsort_nums[i] = stoi(file_contents[i]);
     }
 
-    int left = 0;
-    int right = size;
-    quicksort(qsort_nums, left, right);
+    std::cout << "Quicksort:" << '\n';
+    quicksort(qsort_nums, 0, size - 1);
+    std::cout << '\n';
+    std::cout << std::flush;
+
+    std::cout << "Heapsort:" << '\n';
     heapsort(hsort_nums, size);
+    std::cout << '\n';
+    std::cout << std::flush;
+
+    std::cout << "Quicksort Results: " << '\n';
+    for(int i = 0; i < size; i++) {
+        std::cout << qsort_nums[i] << " ";
+    }
+    std::cout << '\n';
+    std::cout << '\n';
+    std::cout << std::flush;
+
+    std::cout << "Heapsort Results: " << '\n';
+    for(int i = 0; i < size; i++) {
+        std::cout << hsort_nums[i] << " ";
+    }
+    std::cout << '\n';
+    std::cout << '\n';
+    std::cout << std::flush;
 }
